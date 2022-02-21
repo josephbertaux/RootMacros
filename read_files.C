@@ -46,17 +46,17 @@ TTree* read_files(int num_files)
 		//Instantiate and set the read tree
 		TFile* f(TFile::Open(current_file));
 		TTree* r = (TTree*)f->Get("DecayTree");
-		r.SetBranchStatus("*", 0); //Don't read all branches, we're only interested in a couple
+		r->SetBranchStatus("*", 0); //Don't read all branches, we're only interested in a couple
 
 		for(int j = 0; j < branch_names.size(); j++)
 		{
 			//Use the same addresses as the write tree; they're organized by name in branch_names
 			(r->GetBranch(branch_names[j]))->SetStatus(1);
-			(r->GetBranch(branch_names[j]))->SetAddress((t->GetBranch(branch_names[j]))->GetAddress);
+			(r->GetBranch(branch_names[j]))->SetAddress((t->GetBranch(branch_names[j]))->GetAddress());
 		}
 
 		//Now that the branch addresses of the read tree are set commensurately with the branch addresses of the write tree, copy the entries
-		for(int j = 0; j < r.GetEntriesFast(); j++)
+		for(int j = 0; j < r->GetEntriesFast(); j++)
 		{
 			r->GetEntry();
 			t->Fill();
