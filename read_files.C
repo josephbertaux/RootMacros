@@ -27,21 +27,20 @@ TTree* read_files(int num_files)
 	//Explicitly name the branches we'll want to use
 	//This might only be a couple but in the future I may need something more robust
 	branch_names.push_back("D0_mass");				Float_t m = 0.0;		t->Branch(branch_names[branch_names.size()-1], &m);
-	branch_names.push_back("pT");					Float_t pt = 0.0;		t->Branch(branch_names[branch_names.size()-1], &pt);
-	branch_names.push_back("track_1_true_track_history_PDG_mass");	vector<Int_t> *hist1 = 0;	t->Branch(branch_names[branch_names.size()-1], &hist1);
+//	branch_names.push_back("pT");					Float_t pt = 0.0;		t->Branch(branch_names[branch_names.size()-1], &pt);
+	branch_names.push_back("track_1_true_track_history_PDG_ID");	vector<Int_t> *hist1 = 0;	t->Branch(branch_names[branch_names.size()-1], &hist1);
 	branch_names.push_back("track_1_true_track_history_pT");	vector<Float_t> *hist1pt = 0;	t->Branch(branch_names[branch_names.size()-1], &hist1pt);
-	branch_names.push_back("track_2_true_track_history_PDG_mass");	vector<Int_t> *hist2 = 0;	t->Branch(branch_names[branch_names.size()-1], &hist2);
+	branch_names.push_back("track_2_true_track_history_PDG_ID");	vector<Int_t> *hist2 = 0;	t->Branch(branch_names[branch_names.size()-1], &hist2);
 	branch_names.push_back("track_2_true_track_history_pT");	vector<Float_t> *hist2pt = 0;	t->Branch(branch_names[branch_names.size()-1], &hist2pt);
 
 	//Set up for reading 
 	int max_name_length = 40; //lenght of a file name is 40 chars, including the end of string char '\0'
 	char current_file[max_name_length]; //stores the name of the current file we are reading from
 
+
 	for(int i = 0; i < num_files; i++)
 	{
 		snprintf(current_file, max_name_length, "outputData_myHeavyFlavorReco_%05d.root\0", i);
-		cout << current_file << endl;
-
 
 		//Instantiate and set the read tree
 		TFile* f(TFile::Open(current_file));
@@ -58,12 +57,13 @@ TTree* read_files(int num_files)
 		//Now that the branch addresses of the read tree are set commensurately with the branch addresses of the write tree, copy the entries
 		for(int j = 0; j < r->GetEntriesFast(); j++)
 		{
-			r->GetEntry();
+			r->GetEntry(j);
 			t->Fill();
 		}
 
-		r->ResetBranchAddresses();
-		f->Close();
+	//uncommenting these lines will cause the programe to segfault every other time it is run
+		r->ResetBranchAddresses(); 
+//		f->Close(); //Was causing a segfault
 	}
 
 	return t;
