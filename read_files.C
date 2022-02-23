@@ -40,7 +40,7 @@ TTree* read_files(int num_files)
 
 	for(int i = 0; i < num_files; i++)
 	{
-		snprintf(current_file, max_name_length, "outputData_myHeavyFlavorReco_%05d.root\0", i);
+		snprintf(current_file, max_name_length, "outputData_myHeavyFlavorReco_%05d.root\0", i); //I will explicitly include the null terminator \0 if I want to, you can't stop me
 
 		//Instantiate and set the read tree
 		TFile* f(TFile::Open(current_file));
@@ -54,17 +54,22 @@ TTree* read_files(int num_files)
 			(r->GetBranch(branch_names[j]))->SetAddress((t->GetBranch(branch_names[j]))->GetAddress());
 		}
 
-		//Now that the branch addresses of the read tree are set commensurately with the branch addresses of the write tree, copy the entries
+		//Branch addresses of the read tree are set commensurately with the branch addresses of the write tree
+		//Copy the entries
 		for(int j = 0; j < r->GetEntriesFast(); j++)
 		{
 			r->GetEntry(j);
 			t->Fill();
 		}
 
-	//uncommenting these lines will cause the programe to segfault every other time it is run
-		r->ResetBranchAddresses(); 
-//		f->Close(); //Was causing a segfault
+		r->ResetBranchAddresses(); //Not sure if this is doing anything for me
+//		f->Close(); //Was causing a segfault exactly every other time the program was run
 	}
+
+
+	//Reset the memory addresses of our write tree
+	//the local variables will not exist outside the scope of this program
+	t->ResetBranchAddresses();
 
 	return t;
 }
