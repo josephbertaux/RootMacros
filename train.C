@@ -9,7 +9,8 @@
 void train()
 {
 	//--Option specification--//
-	const char* training_branches_filename = "training_branches.list";
+	const char* out_file_name = "training_out.root";
+	const char* training_variables_filename = "training_variables.list";
 	const char* sgnl_tree_filename = "sgnl.root";
 	const char* bkgd_tree_filename = "bkgd.root";
 
@@ -26,23 +27,24 @@ void train()
 	//--Training starts here--//
 	TMVA::Tools::Instance();
 	
-	TFile* out_file = TFile::Open("training_out.root", "RECREATE");
+	TFile* out_file = TFile::Open(out_file_name, "RECREATE");
 	TMVA::Factory *factory = new TMVA::Factory(weights_filename, out_file,factory_options);
 	TMVA::DataLoader *dl = new TMVA::DataLoader(data_loader_filename);
 
 	//Add training variables to the DataLoader which are the branches of interest
-	ifstream training_branches(training_branches_filename);
-	string branch_name;
+	ifstream training_variables(training_variables_filename);
+	string variable_name;
 
 	while(true)
 	{
-		training_branches >> branch_name;
-		if(training_branches.eof())
+		training_variables >> variable_name;
+		if(training_variables.eof())
 		{
 			break;
 		}
 
-		dl->AddVariable(branch_name.c_str(), 'F');
+		cout << variable_name.c_str() << endl;
+		dl->AddVariable(variable_name.c_str(), 'F');
 	}
 	
 	TFile* sgnl_file(TFile::Open(sgnl_tree_filename));
@@ -60,7 +62,7 @@ void train()
 	factory->TestAllMethods();
 	factory->EvaluateAllMethods();
 
-	if(!gROOT->IsBatch()){TMVA::TMVAGui(out_file);}
-	
 	out_file->Close();
+
+	if(!gROOT->IsBatch()){TMVA::TMVAGui(out_file_name);}
 }

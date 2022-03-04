@@ -16,7 +16,7 @@ void make_trees()
 	//The branches we want to use for training are contained in a .list file
 	ifstream training_branches(training_branches_filename);
 
-	int max_branches = 5; //The most branches our analysis will need; we can manually set this directly for good mem usage
+	int max_branches = 40; //The most branches our analysis will need; we can manually set this directly for good mem usage
 	int num_branches = 0;
 	Float_t branch_vals[max_branches];
 	string branch_names[max_branches];
@@ -41,7 +41,7 @@ void make_trees()
 
 	//prepare for reading in the data from a list of .root files
 	//need to declare variables to store truth information in the following analysis and also D0_mass for sideband
-	Float_t m = 0;
+	Float_t * m_ptr = 0;
 
 	vector<Int_t> * hist1 = 0;
 	vector<Int_t> * hist2 = 0;
@@ -69,10 +69,21 @@ void make_trees()
 		{
 			t->SetBranchStatus(branch_names[i].c_str(), 1);
 			t->SetBranchAddress(branch_names[i].c_str(), &(branch_vals[i]));
+
+			if(branch_names[i] == "D0_mass")
+			{
+				m_ptr = &(branch_vals[i]);
+			}
 		}
 
 		//Address the branches of t to correspond to what we need to determine if we fill to signal or background
-		t->SetBranchStatus("D0_mass", 1);				t->SetBranchAddress("D0_mass", &m);
+		//There is a possibility the mass branch was already specified, since we may want it for analysis
+		if(!(t->GetBranchStatus("D0_mass")))
+		{
+			t->SetBranchStatus("D0_mass", 1);
+			t->SetBranchAddress("D0_mass", m_ptr);
+		}
+		//The other branches are vectors and can't be specified with the previous method
 		t->SetBranchStatus("track_1_true_track_history_PDG_ID", 1);	t->SetBranchAddress("track_1_true_track_history_PDG_ID", &hist1);
 		t->SetBranchStatus("track_2_true_track_history_PDG_ID", 1);	t->SetBranchAddress("track_2_true_track_history_PDG_ID", &hist2);
 		t->SetBranchStatus("track_1_true_track_history_pT", 1);		t->SetBranchAddress("track_1_true_track_history_pT", &hist1pT);
@@ -92,7 +103,7 @@ void make_trees()
 
 			//If it is in the sideband, we can categorize it as background immediately
 			//So check if it is between the sidebands (signal range)
-			if(1.7 < m and m < 2.2) //change the bounds to the 3-sigma ones
+			if(1.7 < *m_ptr and *m_ptr < 2.2) //change the bounds to the 3-sigma ones
 			{
 				//we are in the mass regime where it is worth it to check
 				int i = -1;
