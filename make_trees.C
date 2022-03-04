@@ -41,7 +41,8 @@ void make_trees()
 
 	//prepare for reading in the data from a list of .root files
 	//need to declare variables to store truth information in the following analysis and also D0_mass for sideband
-	Float_t * m_ptr = 0;
+	Float_t m = 0;
+	Float_t * m_ptr = &m;
 
 	vector<Int_t> * hist1 = 0;
 	vector<Int_t> * hist2 = 0;
